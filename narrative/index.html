@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Big Moment Writer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky Plan/Write/Check header. Write = one plot part per screen: plot-line map on top, guiding questions left, writing box + word bank right. Highlighter yellow marks the climax. */
+:root{
+  --paper:#F5F6FA; --surface:#FFFFFF; --ink:#1C2234; --muted:#596277; --line:#D8DCE6;
+  --accent:#2C47C9; --accent-soft:#E6EBFF; --mark:#FFD84A; --on-mark:#1C2234;
+  --good:#18805A; --good-soft:#E2F4EC; --nudge:#A9530C; --nudge-soft:#FCEEDD;
+  --say:#DCE6FF; --say-line:#2C47C9; --think:#F1E2FB; --think-line:#8A3FB8; --sense:#DDF3E6; --sense-line:#18805A;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Lexend", "Segoe UI", system-ui, sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#131722; --surface:#1B2130; --ink:#E7EAF2; --muted:#A0A8BC; --line:#2F374A;
+  --accent:#93A6FF; --accent-soft:#252E4D; --mark:#E9C53A; --on-mark:#1C2234;
+  --good:#5ECB98; --good-soft:#18342A; --nudge:#F2A866; --nudge-soft:#3A2A1A; --say:#26315A; --say-line:#93A6FF; --think:#3A2748; --think-line:#D29BF2; --sense:#1D3A2C; --sense-line:#5ECB98; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#131722; --surface:#1B2130; --ink:#E7EAF2; --muted:#A0A8BC; --line:#2F374A;
+  --accent:#93A6FF; --accent-soft:#252E4D; --mark:#E9C53A; --on-mark:#1C2234;
+  --good:#5ECB98; --good-soft:#18342A; --nudge:#F2A866; --nudge-soft:#3A2A1A; --say:#26315A; --say-line:#93A6FF; --think:#3A2748; --think-line:#D29BF2; --sense:#1D3A2C; --sense-line:#5ECB98; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mark{background:linear-gradient(transparent 12%,var(--mark) 12%,var(--mark) 88%,transparent 88%);color:var(--on-mark);padding:0 .2em;border-radius:3px}
+.sr{position:absolute;left:-9999px}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.3rem;letter-spacing:-.01em;margin-right:auto}
+.steps{display:flex;gap:6px}
+.step{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;font-weight:500}
+.step .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);font-size:.9rem;font-variant-numeric:tabular-nums}
+.step[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.step[aria-current="true"] .n{background:var(--surface);color:var(--accent);border-color:var(--surface)}
+.support{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.support-label{font-weight:600;font-size:.95rem}
+.seg{display:flex;border:2px solid var(--accent);border-radius:12px;overflow:hidden}
+.seg button{border:none;background:var(--surface);padding:9px 16px;font-weight:600;font-size:.98rem;cursor:pointer;color:var(--accent)}
+.seg button + button{border-left:2px solid var(--accent)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+@media (max-width:560px){.seg button{padding:8px 10px;font-size:.88rem}}
+
+main{padding-block:24px 64px}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.intro h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800}
+.intro p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.small{padding:5px 11px;font-size:.88rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+
+/* plan */
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.q label{display:block;font-weight:600;margin-bottom:2px}
+.q .hint{font-size:.88rem;color:var(--muted);margin:0 0 8px}
+.q input,.q textarea{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:9px 11px}
+.q textarea{min-height:76px;resize:vertical}
+.q + .q{margin-top:14px}
+.plan-grid h3{font-size:1.15rem;margin-bottom:12px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.plan-grid h3 small{font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.card.big{border:2px solid var(--mark)}
+.pov{display:flex;gap:8px;flex-wrap:wrap}
+.pov label{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:400;background:var(--paper)}
+.pov input{width:auto}
+.next{margin-top:20px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* plot map */
+.plot{margin-bottom:18px}
+.plot svg{display:block;width:100%;height:72px}
+.plot path{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke:var(--line)}
+.plot path.done{stroke:var(--good)}
+.plot path.on{stroke:var(--accent);stroke-width:9}
+.plot-labels{display:grid;grid-template-columns:130fr 196fr 104fr 170fr;gap:6px;margin-top:6px}
+.pl{border:1px solid transparent;background:none;border-radius:10px;padding:6px 8px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0}
+.pl:hover{border-color:var(--line)}
+.pl b{font-family:var(--display);font-size:1rem;line-height:1.15}
+.pl span{font-size:.75rem;color:var(--muted);line-height:1.25}
+.pl .st{font-size:.72rem;color:var(--muted)}
+.pl .st.ok{color:var(--good)}
+.pl[aria-current="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.pl[aria-current="true"] b{color:var(--accent)}
+
+/* part screen */
+.part-title{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.part-title h2{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800}
+.part-title .paren{font-size:1.15rem;color:var(--muted)}
+.draft{font-size:.75rem;background:var(--nudge-soft);color:var(--nudge);border-radius:999px;padding:2px 10px;font-weight:600}
+.teach{margin:10px 0 20px;max-width:62ch}
+.teach summary{cursor:pointer;color:var(--accent);font-weight:500;display:inline-flex;align-items:center;gap:8px;list-style:none}
+.teach summary::-webkit-details-marker{display:none}
+.teach summary::before{content:"?";width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:600;background:var(--accent-soft)}
+.teach[open] summary{margin-bottom:8px}
+.teach p{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:1.02rem}
+.teach strong{color:var(--accent);font-weight:600}
+.part-grid{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:20px;align-items:start}
+.qs{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.qs-head{display:flex;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+.qrow{display:grid;grid-template-columns:minmax(0,1fr) 56px;border-bottom:1px solid var(--line)}
+.qrow:last-child{border-bottom:none}
+.qrow.sel{background:var(--accent-soft)}
+.qbtn{border:none;background:none;text-align:left;padding:12px 14px;cursor:pointer;font-weight:600;line-height:1.3;min-width:0}
+.qbtn em{font-style:normal;font-weight:400;color:var(--muted)}
+.qrow.done .qbtn{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--good)}
+.qcheck{display:grid;place-items:center;border-left:1px solid var(--line);cursor:pointer}
+.qcheck input{width:24px;height:24px;accent-color:var(--good);cursor:pointer}
+.qmore{grid-column:1 / -1;padding:0 14px 12px;display:flex;flex-direction:column;gap:6px}
+.qtip{font-size:.92rem;margin:0}
+.qplan{font-size:.82rem;background:var(--surface);border-radius:6px;padding:4px 8px;align-self:flex-start;color:var(--muted)}
+
+.writer{display:flex;flex-direction:column;gap:14px;min-width:0}
+.box{background:var(--surface);border:2px solid var(--accent);border-radius:var(--r);padding:12px 16px}
+.box.climax{border-color:var(--mark)}
+.box-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.box-head .now{font-weight:600}
+.count{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.count.ok{color:var(--good)}
+.box textarea{width:100%;min-height:230px;border:none;border-top:1px dashed var(--line);margin-top:8px;background:transparent;padding:10px 2px 4px;resize:vertical;line-height:1.8;font-size:1.08rem}
+.box textarea:focus{outline:none}
+.nudge{font-size:.88rem;background:var(--nudge-soft);color:var(--ink);border-radius:8px;padding:8px 12px;margin-top:6px}
+.nudge b{color:var(--nudge)}
+
+.bank{background:var(--accent-soft);border-radius:var(--r);padding:16px}
+.bank h3{font-size:1.05rem;margin-bottom:10px}
+.bank h3 span{font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--muted)}
+.bank-group + .bank-group{margin-top:12px}
+.bank-label{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.words{display:flex;flex-wrap:wrap;gap:8px}
+.word{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:.95rem;cursor:pointer;text-align:left}
+.word.starter{border-radius:8px;font-weight:500}
+.word:hover{border-color:var(--accent);color:var(--accent)}
+.tip{font-size:.8rem;color:var(--muted);margin:12px 0 0}
+
+.starters{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.starter-list{display:flex;flex-direction:column;gap:6px}
+.starter{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px;font-size:1rem;cursor:pointer}
+.starter span{color:var(--accent);font-weight:600}
+.starter:hover{border-color:var(--accent)}
+.mentor{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.mentor summary{cursor:pointer;font-weight:600;color:var(--accent)}
+.mentor-body{margin-top:10px}
+.mentor-text{margin:0 0 10px;font-size:1.05rem;line-height:1.9}
+.hl-s,.hl-t,.hl-d{border-radius:4px;padding:1px 3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.hl-s{background:var(--say);border-bottom:2px solid var(--say-line)}
+.hl-t{background:var(--think);border-bottom:2px dashed var(--think-line)}
+.hl-d{background:var(--sense);border-bottom:2px dotted var(--sense-line)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;font-size:.82rem}
+.legend span{padding:2px 8px}
+
+.filebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.file{padding:8px 14px;font-weight:600}
+#saveFile{background:var(--good);border-color:var(--good);color:var(--surface)}
+.savestate{font-size:.8rem;color:var(--muted)}
+.savestate.dirty{color:var(--nudge);font-weight:600}
+.overlay{position:fixed;inset:0;background:rgba(10,14,25,.55);display:grid;place-items:center;z-index:30;padding:max(16px,env(safe-area-inset-left,0px))}
+.dialog{background:var(--surface);color:var(--ink);border-radius:var(--r);padding:22px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:10px}
+.dialog p{margin:0}
+.dialog .warn{color:var(--nudge);font-size:.92rem}
+
+/* check */
+.check{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:start}
+.story{white-space:pre-wrap;font-size:1.02rem;line-height:1.8;max-height:70vh;overflow:auto;padding-right:6px}
+.story .ph{color:var(--muted);font-style:italic}
+.story .lbl{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:14px}
+.story .lbl:first-child{margin-top:0}
+.rubric{display:flex;flex-direction:column;gap:14px}
+.crit h3{font-size:1.08rem}
+.crit .std{font-size:.75rem;color:var(--muted);font-weight:500;letter-spacing:.04em}
+.crit .ask{margin:4px 0 10px;color:var(--muted);font-size:.92rem}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lvl{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px;text-align:left;cursor:pointer;font-size:.8rem;line-height:1.35;display:flex;flex-direction:column;gap:4px}
+.lvl b{font-family:var(--display);font-size:1.1rem}
+.lvl[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-soft)}
+.noticed{margin-top:10px;font-size:.85rem;color:var(--muted)}
+.total{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.total b{font-family:var(--display);font-size:2rem;font-variant-numeric:tabular-nums}
+.confirm{background:var(--nudge-soft);border-radius:10px;padding:10px 14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:999px;font-size:.92rem;z-index:20}
+
+@media (max-width:900px){
+  .part-grid,.check{grid-template-columns:minmax(0,1fr)}
+  .story{max-height:none}
+}
+@media (max-width:560px){
+  .step{padding-right:10px}.step .t{display:none}
+  .levels{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pl span{display:none}
+  .pl b{font-size:.85rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="brand">Big Moment <span class="mark">Writer</span></div>
+    <nav class="steps" aria-label="Steps">
+      <button class="step" data-go="plan"><span class="n">1</span><span class="t">Plan</span></button>
+      <button class="step" data-go="write"><span class="n">2</span><span class="t">Write</span></button>
+      <button class="step" data-go="check"><span class="n">3</span><span class="t">Check</span></button>
+    </nav>
+    <div class="filebar">
+      <button class="btn file" id="saveFile"><span aria-hidden="true">⬇</span> Save my work</button>
+      <button class="btn file" id="openFile"><span aria-hidden="true">⬆</span> Open saved work</button>
+      <span class="savestate" id="saveState"></span>
+    </div>
+    <div class="support" role="group" aria-label="Help level">
+      <span class="support-label">Help level</span>
+      <div class="seg" id="support">
+        <button data-sup="full">Full help</button>
+        <button data-sup="some">Some help</button>
+        <button data-sup="light">Light help</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- PLAN -->
+<section id="view-plan" hidden>
+  <div class="intro">
+    <div>
+      <h2>Plan your story</h2>
+      <p>Answer these in a few words. You don't need full sentences yet. The gray text shows an example.</p>
+    </div>
+    <div class="row"><button class="btn small" id="newStory">Start a new story</button></div>
+  </div>
+  <div id="confirmNew" class="confirm row" hidden>
+    <span>This clears your plan and your writing. Are you sure?</span>
+    <button class="btn small" id="newYes">Yes, clear it</button>
+    <button class="btn small" id="newNo">Keep my story</button>
+  </div>
+  <div class="plan-grid" style="margin-top:12px">
+    <div class="card">
+      <h3>Main character</h3>
+      <div class="q"><label for="p-name">Main character's name</label>
+        <input id="p-name" data-plan="name" placeholder="Example: Maya"></div>
+      <div class="q"><label for="p-trait">One character trait</label>
+        <p class="hint">What are they like on the inside?</p>
+        <input id="p-trait" data-plan="trait" placeholder="Example: stubborn"></div>
+      <div class="q"><label for="p-want">What do they want?</label>
+        <input id="p-want" data-plan="want" placeholder="Example: to make the school soccer team"></div>
+      <div class="q"><label>Point of view <span style="font-weight:400;color:var(--muted)">(who tells the story)</span></label>
+        <div class="pov">
+          <label><input type="radio" name="pov" id="pov-1" value="first"> First person ("I")</label>
+          <label><input type="radio" name="pov" id="pov-3" value="third"> Third person ("she / he / they")</label>
+        </div></div>
+    </div>
+    <div class="card">
+      <h3>Setting <small>(where and when)</small></h3>
+      <div class="q"><label for="p-setting">Where does it happen?</label>
+        <input id="p-setting" data-plan="setting" placeholder="Example: the muddy field behind the school"></div>
+      <div class="q"><label for="p-when">When does it happen?</label>
+        <input id="p-when" data-plan="when" placeholder="Example: a rainy Saturday in October"></div>
+    </div>
+    <div class="card">
+      <h3>Conflict <small>(the main problem)</small></h3>
+      <div class="q"><label for="p-problem">What gets in the way?</label>
+        <textarea id="p-problem" data-plan="problem" placeholder="Example: Maya twists her ankle the week before tryouts"></textarea></div>
+    </div>
+    <div class="card big">
+      <h3><span class="mark">Climax</span> <small>(the turning point)</small></h3>
+      <div class="q"><label for="p-moment">What is the moment everything changes?</label>
+        <p class="hint">You will write this part in slow motion. It will be your longest part.</p>
+        <textarea id="p-moment" data-plan="moment" placeholder="Example: the last drill at tryouts, when Maya has to sprint on her sore ankle"></textarea></div>
+    </div>
+    <div class="card">
+      <h3>Resolution <small>(how it ends)</small></h3>
+      <div class="q"><label for="p-ending">How is the conflict solved (or not)?</label>
+        <textarea id="p-ending" data-plan="ending" placeholder="Example: she doesn't make the team, but the coach asks her to be team manager"></textarea></div>
+      <div class="q"><label for="p-change">How did the main character change?</label>
+        <input id="p-change" data-plan="change" placeholder="Example: she learns being part of the team matters more than starting"></div>
+    </div>
+  </div>
+  <div class="next" style="justify-content:flex-end"><button class="btn primary" data-go="write">Next: start writing</button></div>
+</section>
+
+<!-- WRITE -->
+<section id="view-write" hidden>
+  <div class="plot" id="plot"></div>
+  <div id="partScreen"></div>
+</section>
+
+<!-- CHECK -->
+<section id="view-check" hidden>
+  <div class="intro">
+    <div>
+      <h2>Check your story</h2>
+      <p>Read your story, then score yourself on each part. Be honest. A 3 means you did it. A 4 means you did it really well.</p>
+    </div>
+    <div class="row">
+      <button class="btn small" id="copyStory">Copy my story</button>
+      <button class="btn small primary" id="copyAll">Copy story + scores for my teacher</button>
+    </div>
+  </div>
+  <div class="check">
+    <div class="card"><div class="story" id="storyOut"></div></div>
+    <div class="rubric">
+      <div class="card total"><span class="eyebrow" style="margin:0">My total</span><b id="total">0 / 20</b><span id="totalNote" class="count"></span></div>
+      <div id="rubric" class="rubric"></div>
+    </div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="fileIn" accept=".txt,text/plain" hidden>
+<div class="overlay" id="openAsk" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="openAskTitle">
+    <h3 id="openAskTitle">Open this save?</h3>
+    <p id="openAskText"></p>
+    <p class="warn">This replaces what is on the screen now.</p>
+    <div class="row"><button class="btn primary" id="openYes">Open it</button><button class="btn" id="openNo">Cancel</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const KEY="big-moment-writer-v1";
+const blank={plan:{name:"",trait:"",want:"",pov:"",setting:"",when:"",problem:"",moment:"",ending:"",change:""},
+  parts:{beginning:"",problem:"",moment:"",ending:""},checks:{},sel:{},scores:{},support:"full",active:"beginning"};
+let S=JSON.parse(JSON.stringify(blank));
+try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);S={...S,...d,plan:{...S.plan,...d.plan},parts:{...S.parts,...d.parts},checks:d.checks||{},sel:d.sel||{},scores:d.scores||{}}}}catch(e){}
+let saveT;function save(){S.dirty=true;if(typeof paintSaveState==="function")paintSaveState();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},300)}
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nm=()=>S.plan.name.trim()||"your main character";
+const qt=x=>typeof x.t==="function"?x.t():x.t;
+const first=()=>S.plan.pov==="first";
+const fill=s=>s.replace(/\{name\}/g,S.plan.name.trim()||"___");
+
+/* ---------- text checks ---------- */
+const SENSE_RX=/\b(saw|see|seen|looked|heard|hear|sound|smell\w*|tast\w*|felt|touch\w*|loud|quiet|cold|warm|hot|icy|bright|dark|rough|smooth|sweet|sour|sticky|wet|damp|muddy|crunch\w*|whisper\w*|roar\w*|echo\w*|glow\w*|flicker\w*|buzz\w*|pound\w*|sharp|soft)\b/gi;
+const PLAIN_RX=/\b(good|bad|nice|fun|cool|stuff|things|very|really|a lot|went)\b/gi;
+const TRANS_RX=/\b(later|next (?:morning|day|week)|meanwhile|suddenly|at first|after (?:a while|that|school)|just then|finally|the next|before|while|as soon as|that night|outside|across|in the end|from that day)\b/gi;
+const sentences=t=>(t.trim().match(/[^.!?]+[.!?"”]*/g)||[]).filter(x=>x.trim().split(/\s+/).length>=2).length;
+const words=t=>(t.trim().match(/\S+/g)||[]).length;
+const count=(t,rx)=>(t.match(rx)||[]).length;
+const dialogue=t=>count(t,/["“][^"”]{2,}["”]/g);
+const thens=t=>count(t,/\bthen\b/gi);
+const allText=()=>Object.values(S.parts).join("\n");
+
+/* ---------- the four plot parts ---------- */
+const pv=(i,he)=>first()?i:he;
+const PARTS=[
+ {id:"beginning",term:"The Beginning",short:"Beginning",paren:"exposition",ask:"What goes in the beginning?",target:[4,6],
+  teach:()=>`The beginning, or <strong>exposition</strong>, introduces your main character and where the story happens. It ends when the problem, or <strong>conflict</strong>, shows up. That is where the <strong>rising action</strong> starts.`,
+  qs:[
+   {k:"who",t:()=>S.plan.name.trim()?`Who is ${S.plan.name.trim()}?`:"Who is your main character?",
+    tip:()=>`Tell their name. Show one thing they are like on the inside (a character trait) with something they do or say.`,
+    plan:()=>[S.plan.name,S.plan.trait].filter(Boolean).join(" · "),
+    starters:()=>pv(["My name is {name}.","I am the kind of kid who","People say I am"],["{name} was the kind of kid who","Everyone knew {name} as","{name} was always"]),
+    words:["brave","shy","stubborn","curious","determined","loyal","impatient","careful","funny","competitive"],wl:"Character traits"},
+   {k:"where",t:"Where does the story happen?",
+    tip:()=>`Also tell when it happens. Add one thing you can see, hear, or smell there.`,
+    plan:()=>[S.plan.setting,S.plan.when].filter(Boolean).join(" · "),
+    starters:()=>["The story takes place at","It was the day of","The air smelled like"],
+    words:["rainy","crowded","quiet","muddy","freezing","dusty","echoing","bright","cramped","empty"],wl:"Setting words"},
+   {k:"want",t:()=>`What does ${nm()} want?`,
+    tip:()=>`Show what they want more than anything. This is what the problem will get in the way of.`,
+    plan:()=>S.plan.want,
+    starters:()=>pv(["More than anything, I wanted","My biggest goal was to","I had been waiting all year to"],["More than anything, {name} wanted","{name}'s biggest goal was to","{name} had been waiting all year to"]),
+    words:["finally","someday","this year","for once","more than anything"],wl:"Helpful words"},
+   {k:"conflict",t:()=>`What gets in ${nm()}'s way?`,
+    tip:()=>`This is the conflict (the main problem). It usually comes at the end of the beginning. When it shows up, the rising action starts.`,
+    plan:()=>S.plan.problem,
+    starters:()=>["But one day,","Everything changed when","There was just one problem:"],
+    words:["suddenly","unfortunately","without warning","out of nowhere"],wl:"Surprise words"}
+  ]},
+ {id:"problem",term:"Rising Action",ask:"What goes in the rising action?",paren:"the conflict builds",target:[4,8],draft:true,
+  teach:()=>`The <strong>rising action</strong> is where the conflict builds. The main character tries to solve the problem, but things get harder. Each event raises the <strong>tension</strong> (how worried the reader feels). The rising action leads up to the <strong>climax</strong>.`,
+  qs:[
+   {k:"try",t:()=>`What does ${nm()} try first?`,tip:()=>`Show them doing something about the conflict.`,plan:()=>S.plan.problem,
+    starters:()=>pv(["At first, I tried to","The first thing I did was","I decided to"],["At first, {name} tried to","The first thing {name} did was","{name} decided to"]),words:["tried","planned","decided","practiced","asked"],wl:"Action words"},
+   {k:"harder",t:"What makes it harder?",tip:()=>`Add something new that gets in the way. The tension should go up.`,plan:()=>"",
+    starters:()=>pv(["To make things worse,","Just when I thought it was going well,","No matter how hard I tried,"],["To make things worse,","Just when {name} thought it was going well,","No matter how hard {name} tried,"]),words:["worse","harder","again","still"],wl:"Build-up words"},
+   {k:"feel",t:()=>`How does ${nm()} feel?`,tip:()=>`Show feelings with the body: hands, face, stomach, heartbeat.`,plan:()=>"",
+    starters:()=>pv(["My hands started to shake when","My stomach dropped because","I had never felt so"],["{name}'s hands started to shake when","{name}'s stomach dropped because","{name} had never felt so"]),words:["nervous","frustrated","worried","embarrassed","angry"],wl:"Feeling words"},
+   {k:"time",t:"How does time move forward?",tip:()=>`Use a transition (a time or place word) to jump ahead, instead of "then."`,plan:()=>"",
+    starters:()=>["Later that day,","The next morning,","A week later,"],words:["later","meanwhile","the next day","by Friday"],wl:"Time words"}
+  ]},
+ {id:"moment",term:"Climax",ask:"What goes in the climax?",paren:"the turning point",target:[8,14],draft:true,climax:true,
+  teach:()=>`The <strong>climax</strong> is the turning point, the moment of highest <strong>tension</strong>. The main character faces the conflict head-on.`,
+  mentor:{title:"See an example climax",
+    text:[["The whistle blew, and I took off. ",""],["My ankle throbbed with every step, and the wet grass squished under my cleats. ","d"],["Don't stop now, I told myself. Just three more cones. ","t"],["\"You got this, Maya!\" ","s"],["Coach Rivera yelled from the sideline. I gritted my teeth and pushed past the last cone. ",""],["Right at the finish line, my ankle gave out, and the whole field went quiet.","d"]]},
+  qs:[
+   {k:"slow",t:"What happens, second by second?",tip:()=>`Break the moment into tiny steps. Zoom in like a camera.`,plan:()=>S.plan.moment,
+    starters:()=>pv(["Time seemed to slow down.","For a second, nobody moved.","I took a deep breath and"],["Time seemed to slow down.","For a second, nobody moved.","{name} took a deep breath and"]),words:["slowly","inch by inch","for a second","all at once"],wl:"Slow-motion words"},
+   {k:"say",t:"What does someone say?",tip:()=>`Write the exact words inside quotation marks. Then tell who said it.`,plan:()=>"",
+    starters:()=>pv(['I shouted, "','Someone whispered, "','My friend called out, "'],['{name} shouted, "','Someone whispered, "','A voice called out, "']),words:["whispered","shouted","muttered","begged","snapped","called out"],wl:"Talk words"},
+   {k:"think",t:()=>`What is ${nm()} thinking?`,tip:()=>`Show what they think but don't say out loud.`,plan:()=>"",
+    starters:()=>pv(["I thought,","All I could think about was","I wondered if"],["{name} thought,","All {name} could think about was","{name} wondered if"]),words:["wondered","hoped","realized","remembered"],wl:"Thinking words"},
+   {k:"sense",t:()=>`What can ${nm()} see, hear, or feel?`,tip:()=>`Add details from the five senses so the reader feels like they are there.`,plan:()=>"",
+    starters:()=>pv(["The only sound was","It smelled like","I could feel"],["The only sound was","It smelled like","{name} could feel"]),words:["crunched","echoed","roared","icy","sticky","pounding","flickered","sharp"],wl:"Sense words"}
+  ]},
+ {id:"ending",term:"Resolution",ask:"What goes in the resolution?",paren:"how it ends",target:[3,6],draft:true,
+  teach:()=>`The <strong>resolution</strong> is the end of your story. It shows how the <strong>conflict</strong> is solved (or not solved), and how the main character changed or what they learned.`,
+  qs:[
+   {k:"solved",t:"How is the conflict solved?",tip:()=>`Tell what happens after the climax.`,plan:()=>S.plan.ending,
+    starters:()=>pv(["In the end,","After that day,","It wasn't what I expected, but"],["In the end,","After that day,","It wasn't what {name} expected, but"]),words:["finally","at last","in the end"],wl:"Ending words"},
+   {k:"change",t:()=>`How did ${nm()} change?`,tip:()=>`Show how they are different now than at the beginning.`,plan:()=>S.plan.change,
+    starters:()=>pv(["I realized that","From that day on, I","Now I know"],["{name} realized that","From that day on, {name}","Now {name} knew"]),words:["realized","learned","understood","changed"],wl:"Change words"},
+   {k:"last",t:"What is your last sentence?",tip:()=>`End with a thought, a line of dialogue, or a picture. Skip "The End."`,plan:()=>"",
+    starters:()=>["Looking back,","Now, whenever","Maybe next time,"],words:["smiled","looked back","whenever"],wl:"Closing words"}
+  ]}
+];
+const P=Object.fromEntries(PARTS.map(p=>[p.id,p]));
+
+function nudges(id){
+  const t=S.parts[id],n=sentences(t),f=[];
+  if(thens(t)>=3) f.push(`You used "then" ${thens(t)} times. Try a time word instead.`);
+  if(id==="beginning"&&n>=2&&!first()&&S.plan.name.trim()&&!t.toLowerCase().includes(S.plan.name.trim().toLowerCase())) f.push(`Name ${S.plan.name.trim()} so the reader meets your main character.`);
+  if(id==="moment"&&n>=3&&dialogue(t)===0) f.push(`Your climax has no dialogue yet. Add one line in quotation marks.`);
+  if(id==="moment"&&n>0&&words(t)<words(S.parts.beginning)) f.push(`Your climax is shorter than your beginning. Slow it down to stretch it out.`);
+  if(id==="ending"&&/\b(the end|a dream|woke up)\b/i.test(t)) f.push(`Try an ending that shows what ${nm()} learned instead of "the end" or a dream.`);
+  const plain=(t.match(PLAIN_RX)||[]);if(plain.length>=3) f.push(`Try a stronger word than "${plain[0].toLowerCase()}." What exactly do you mean?`);
+  return f;
+}
+
+/* ---------- plan ---------- */
+function fillPlan(){document.querySelectorAll("[data-plan]").forEach(el=>el.value=S.plan[el.dataset.plan]||"");document.querySelectorAll('input[name="pov"]').forEach(r=>r.checked=S.plan.pov===r.value)}
+document.querySelectorAll("[data-plan]").forEach(el=>{el.value=S.plan[el.dataset.plan]||"";el.addEventListener("input",()=>{S.plan[el.dataset.plan]=el.value;save()})});
+document.querySelectorAll('input[name="pov"]').forEach(r=>{r.checked=S.plan.pov===r.value;r.addEventListener("change",()=>{S.plan.pov=r.value;save()})});
+$("#newStory").onclick=()=>{$("#confirmNew").hidden=false};
+$("#newNo").onclick=()=>{$("#confirmNew").hidden=true};
+$("#newYes").onclick=()=>{const sup=S.support;S=JSON.parse(JSON.stringify(blank));S.support=sup;save();
+  document.querySelectorAll("[data-plan]").forEach(el=>el.value="");document.querySelectorAll('input[name="pov"]').forEach(r=>r.checked=false);
+  $("#confirmNew").hidden=true;toast("Cleared. Ready for a new story.")};
+
+/* ---------- plot map ---------- */
+const SEG={beginning:"M8,62 L130,62",problem:"M130,62 L326,26",moment:"M326,26 Q378,-4 430,26",ending:"M430,26 L592,60"};
+function renderPlot(){
+  const svg=`<svg viewBox="0 0 600 70" preserveAspectRatio="none" aria-hidden="true">${PARTS.map(p=>{
+    const cls=p.id===S.active?"on":(sentences(S.parts[p.id])>=p.target[0]?"done":"");return `<path d="${SEG[p.id]}" class="${cls}"/>`}).join("")}</svg>`;
+  const labels=PARTS.map((p,i)=>{const n=sentences(S.parts[p.id]),ok=n>=p.target[0];
+    return `<button class="pl" data-part="${p.id}" aria-current="${p.id===S.active}"><b>${p.short||p.term}</b><span>(${p.paren})</span><span class="st ${ok?"ok":""}">${n?`${ok?"✓ ":""}${n} sentence${n===1?"":"s"}`:`Part ${i+1}`}</span></button>`}).join("");
+  $("#plot").innerHTML=svg+`<div class="plot-labels">${labels}</div>`;
+  document.querySelectorAll(".pl").forEach(b=>b.onclick=()=>goPart(b.dataset.part));
+}
+
+/* ---------- part screen ---------- */
+function goPart(id){S.active=id;save();renderWriteView();window.scrollTo(0,0)}
+function curQ(p){const sel=S.sel[p.id];return p.qs.find(q=>q.k===sel)||p.qs[0]}
+
+function renderWriteView(){
+  renderPlot();
+  const p=P[S.active]||PARTS[0],i=PARTS.indexOf(p),sup=S.support,q=curQ(p),ch=S.checks[p.id]||{};
+  const prev=PARTS[i-1],next=PARTS[i+1];
+  const qsHTML=p.qs.map((x,j)=>{const done=!!ch[x.k],on=x.k===q.k,pl=sup==="full"?x.plan():"";
+    const more=on&&sup!=="light"?`<div class="qmore"><p class="qtip">${esc(x.tip())}</p>${pl?`<span class="qplan">Your plan: ${esc(pl)}</span>`:""}</div>`:"";
+    return `<div class="qrow ${on?"sel":""} ${done?"done":""}">
+      <button class="qbtn" data-q="${x.k}" aria-expanded="${on}">${esc(qt(x))}${x.p?` <em>(${esc(x.p)})</em>`:""}</button>
+      <label class="qcheck"><input type="checkbox" data-done="${x.k}" ${done?"checked":""}><span class="sr">I wrote this: ${esc(qt(x))}</span></label>
+      ${more}
+    </div>`}).join("");
+  const doneN=p.qs.filter(x=>ch[x.k]).length;
+  const starters=q.starters();
+  const startHTML=sup!=="full"?"":`<div class="starters">
+      <div class="bank-label">Sentence starters · ${esc(qt(q))}</div>
+      <div class="starter-list">${starters.map(s=>`<button class="starter" data-w="${esc(fill(s))}">${esc(fill(s))}<span aria-hidden="true">+</span></button>`).join("")}</div>
+    </div>`;
+  const bankHTML=sup==="light"?"":`<div class="bank" id="bank">
+      <h3>Word bank <span>for: ${esc(qt(q))}</span></h3>
+      <div class="bank-group"><div class="bank-label">${esc(q.wl)}</div><div class="words">${q.words.map(w=>`<button class="word" data-w="${esc(w)}">${esc(w)}</button>`).join("")}</div></div>
+      <p class="tip">Click a starter or word to add it where your cursor is. Tap a different question to see different starters and words. To talk instead of type on a Chromebook, press Search + D.</p>
+    </div>`;
+  const mentorHTML=!p.mentor?"":`<details class="mentor" ${sup!=="light"?"open":""}><summary>${esc(p.mentor.title)}</summary>
+      <div class="mentor-body"><p class="mentor-text">${p.mentor.text.map(([x,c])=>c?`<span class="hl-${c}">${esc(x.trim())}</span> `:esc(x)).join("")}</p>
+      <div class="legend"><span class="hl-s">Dialogue</span><span class="hl-t">Thoughts</span><span class="hl-d">Sensory details</span></div></div></details>`;
+  $("#partScreen").innerHTML=`
+    <div class="eyebrow">Part ${i+1} of 4</div>
+    <div class="part-title"><h2>${p.climax?`<span class="mark">${p.term}</span>`:p.term}</h2><span class="paren">(${p.paren})</span>${p.draft?'<span class="draft">Draft screen</span>':""}</div>
+    <details class="teach" id="teach"><summary>${esc(p.ask)}</summary><p>${p.teach()}</p></details>
+    <div class="part-grid">
+      <div class="qs">
+        <div class="qs-head"><span>Answer in any order</span><span>Done? ${doneN}/${p.qs.length}</span></div>
+        ${qsHTML}
+      </div>
+      <div class="writer">
+        ${mentorHTML}
+        ${startHTML}
+        <div class="box ${p.climax?"climax":""}">
+          <div class="box-head"><label class="now" for="ta">My ${(p.short||p.term).toLowerCase()}</label><span class="count" id="cnt"></span></div>
+          <textarea id="ta" spellcheck="true" placeholder="Start with any question. Tap one on the left for ideas."></textarea>
+          <div id="nudge"></div>
+        </div>
+        ${bankHTML}
+      </div>
+    </div>
+    <div class="next">
+      ${prev?`<button class="btn" id="prevBtn">← Back: ${prev.short||prev.term}</button>`:`<button class="btn" data-go2="plan">← Back to my plan</button>`}
+      ${next?`<button class="btn primary" id="nextBtn">Next: ${next.term} →</button>`:`<button class="btn primary" data-go2="check">Next: check my story →</button>`}
+    </div>`;
+  const ta=$("#ta");ta.value=S.parts[p.id];
+  ta.addEventListener("input",()=>{S.parts[p.id]=ta.value;save();renderLive()});
+  document.querySelectorAll(".qbtn").forEach(b=>b.onclick=()=>{S.sel[p.id]=b.dataset.q;save();renderWriteView();$("#ta").focus({preventScroll:true})});
+  document.querySelectorAll("[data-done]").forEach(cb=>cb.addEventListener("change",()=>{
+    S.checks[p.id]=S.checks[p.id]||{};S.checks[p.id][cb.dataset.done]=cb.checked;
+    save();renderWriteView();
+  }));
+  document.querySelectorAll("[data-w]").forEach(b=>{b.addEventListener("mousedown",e=>e.preventDefault());b.onclick=()=>insertWord(b.dataset.w)});
+  const pb=$("#prevBtn");if(pb)pb.onclick=()=>goPart(prev.id);
+  const nb=$("#nextBtn");if(nb)nb.onclick=()=>goPart(next.id);
+  document.querySelectorAll("[data-go2]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.go2;window.scrollTo(0,0)});
+  renderLive();
+}
+function renderLive(){
+  const p=P[S.active],n=sentences(S.parts[p.id]),c=$("#cnt");if(!c)return;
+  c.textContent=S.support==="light"?`${n} sentence${n===1?"":"s"}`:`${n} sentence${n===1?"":"s"} · aim for ${p.target[0]}–${p.target[1]}`;
+  c.classList.toggle("ok",n>=p.target[0]);
+  const f=S.support==="full"?nudges(p.id):[];
+  $("#nudge").innerHTML=f.length?`<div class="nudge"><b>I noticed:</b> ${esc(f[0])}</div>`:"";
+  renderPlot();
+}
+function insertWord(w){
+  const ta=$("#ta");if(!ta)return;
+  const s=ta.selectionStart??ta.value.length,e=ta.selectionEnd??s,v=ta.value,before=v.slice(0,s);
+  const pre=before&&!/\s$/.test(before)&&!/^[,."]/.test(w)?" ":"";
+  const ins=pre+w+(/["]$/.test(w)?"":" ");
+  ta.value=before+ins+v.slice(e);ta.focus();ta.selectionStart=ta.selectionEnd=s+ins.length;
+  S.parts[S.active]=ta.value;save();renderLive();
+}
+
+/* ---------- check ---------- */
+const RUBRIC=[
+ {id:"a",std:"W.7.3a",title:"Beginning (exposition)",ask:"Does the reader meet the main character, the setting, and the conflict? Does the point of view stay the same?",
+  lv:["The reader doesn't know who or where.","Some of the characters, setting, or conflict is there. The reader might be confused.","The beginning shows the main character, setting, and conflict. The point of view stays the same.","The beginning grabs the reader and clearly sets up the main character, setting, and conflict."],
+  noticed:()=>`Beginning: ${sentences(S.parts.beginning)} sentences. Questions checked off: ${Object.values(S.checks.beginning||{}).filter(Boolean).length} of 4.`},
+ {id:"b",std:"W.7.3a, c",title:"Sequence and transitions",ask:"Do events go in an order that makes sense? Do you use transitions, not just \"then\"?",
+  lv:["The events are hard to follow.","Mostly in order, but lots of \"then\" or jumping around.","Events are in order, with some transitions besides \"then.\"","Events flow clearly, and transitions show every jump in time or place."],
+  noticed:()=>`Transitions found: ${count(allText(),TRANS_RX)}. "Then" used: ${thens(allText())} times.`},
+ {id:"c",std:"W.7.3b",title:"Narrative techniques",ask:"Did you use dialogue, description, and thoughts? Is the climax in slow motion?",
+  lv:["It's a list of what happened.","Mostly telling what happened. Little dialogue or description.","Dialogue and description in some places, including the climax.","The climax is in slow motion with dialogue, actions, and thoughts. The reader can picture it."],
+  noticed:()=>{const w=PARTS.map(p=>words(S.parts[p.id]));return `Lines of dialogue: ${dialogue(allText())}. The climax is ${w[2]>Math.max(w[0],w[1],w[3])?"the longest part":"not the longest part yet"} (${w[2]} words).`}},
+ {id:"d",std:"W.7.3d",title:"Precise words and sensory details",ask:"Did you pick exact words? Can the reader see, hear, smell, or feel the story?",
+  lv:["Words are vague. Hard to picture.","Mostly plain words like good, bad, nice, went.","Some exact words and a few sensory details.","Exact words and sensory details all through, so the reader feels like they're there."],
+  noticed:()=>`Sense words found: ${count(allText(),SENSE_RX)}. Plain words (good, nice, very, went...): ${count(allText(),PLAIN_RX)}.`},
+ {id:"e",std:"W.7.3e",title:"Resolution",ask:"Does the resolution solve the conflict and show what it meant?",
+  lv:["There's no real ending.","The story just stops, or ends with \"the end\" or a dream.","The resolution solves the conflict and hints at what it meant.","The resolution solves the conflict and shows how the main character changed or what they learned."],
+  noticed:()=>{const e=S.parts.ending;return `Resolution: ${sentences(e)} sentences.${/\b(the end|a dream|woke up)\b/i.test(e)?' Uses "the end" or a dream.':""}${S.plan.change?' Your plan said: "'+S.plan.change+'". Is that in your resolution?':""}`}}
+];
+function renderCheck(){
+  const any=PARTS.some(p=>S.parts[p.id].trim());
+  $("#storyOut").innerHTML=any?PARTS.map(p=>`<span class="lbl">${p.term}</span>${S.parts[p.id].trim()?esc(S.parts[p.id].trim()):'<span class="ph">(not written yet)</span>'}`).join("\n")
+    :'<span class="ph">Your story will show up here after you write it.</span>';
+  $("#rubric").innerHTML=RUBRIC.map(r=>`
+    <div class="card crit"><div class="std">${r.std}</div><h3>${r.title}</h3><p class="ask">${esc(r.ask)}</p>
+      <div class="levels">${r.lv.map((d,i)=>`<button class="lvl" aria-pressed="${S.scores[r.id]===i+1}" data-r="${r.id}" data-l="${i+1}"><b>${i+1}</b>${esc(d)}</button>`).join("")}</div>
+      <div class="noticed"><strong>What the app noticed:</strong> ${esc(r.noticed())}</div></div>`).join("");
+  document.querySelectorAll(".lvl").forEach(b=>b.onclick=()=>{S.scores[b.dataset.r]=+b.dataset.l;save();renderCheck()});
+  const sc=RUBRIC.map(r=>S.scores[r.id]||0),tot=sc.reduce((a,b)=>a+b,0),done=sc.filter(Boolean).length;
+  $("#total").textContent=`${tot} / 20`;
+  $("#totalNote").textContent=done<5?`${5-done} part${5-done===1?"":"s"} left to score`:(sc.every(x=>x>=3)?"Every part at 3 or higher.":"Pick one part under 3 and go back to fix it.");
+}
+function storyText(){return PARTS.map(p=>S.parts[p.id].trim()).filter(Boolean).join("\n\n")}
+function copy(text,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toast(msg),()=>fallback(text))}else fallback(text)}
+function fallback(text){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied")}catch(e){toast("Select the story and press Ctrl + C")}ta.remove()}
+$("#copyStory").onclick=()=>copy(storyText(),"Story copied");
+$("#copyAll").onclick=()=>{
+  const lines=RUBRIC.map(r=>`${r.std} ${r.title}: ${S.scores[r.id]||"-"} / 4`);
+  const t=(S.plan.name?`Story about ${S.plan.name}\n\n`:"")+storyText()+"\n\n--- My self-check ---\n"+lines.join("\n")+`\nTotal: ${RUBRIC.reduce((a,r)=>a+(S.scores[r.id]||0),0)} / 20\nHelp level used: ${SUPNAME[S.support]}`;
+  copy(t,"Story and scores copied. Paste them where your teacher asked.");
+};
+
+/* ---------- nav ---------- */
+const SUPNAME={full:"Full help",some:"Some help",light:"Light help"};
+function paintSupport(){document.querySelectorAll("[data-sup]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sup===S.support))}
+document.querySelectorAll("[data-sup]").forEach(b=>b.onclick=()=>{S.support=b.dataset.sup;save();paintSupport();if(!$("#view-write").hidden)renderWriteView()});
+if(!SUPNAME[S.support])S.support="full";
+paintSupport();
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+/* ---------- save to a file / open a file ---------- */
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const niceTime=d=>d.toLocaleString(undefined,{weekday:"long",month:"long",day:"numeric",hour:"numeric",minute:"2-digit"});
+function paintSaveState(){
+  const el=$("#saveState");if(!el)return;
+  if(!S.fileSavedAt){el.textContent="Not saved to a file yet";el.className="savestate dirty";return}
+  const t=new Date(S.fileSavedAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+  el.textContent=S.dirty?`Changed since your ${t} save`:`Saved to a file at ${t}`;el.className="savestate"+(S.dirty?" dirty":"");
+}
+function saveFileText(now){
+  const L=[],pl=S.plan;
+  L.push("BIG MOMENT WRITER"+(pl.name?" - Story about "+pl.name:""));
+  L.push("Saved: "+niceTime(now));
+  L.push("Help level: "+SUPNAME[S.support],"");
+  L.push("MY PLAN");
+  const row=(k,v)=>{if(v&&v.trim())L.push(k+": "+v.trim())};
+  row("Main character",pl.name);row("Character trait",pl.trait);row("Wants",pl.want);
+  row("Point of view",pl.pov==="first"?"First person (I)":pl.pov==="third"?"Third person":"");
+  row("Setting",[pl.setting,pl.when].filter(Boolean).join(", "));row("Conflict",pl.problem);row("Climax",pl.moment);row("Resolution",pl.ending);row("Change",pl.change);
+  PARTS.forEach(p=>{L.push("",(p.term+(p.id==="beginning"?" (exposition)":"")).toUpperCase());L.push(S.parts[p.id].trim()||"(not written yet)")});
+  if(Object.keys(S.scores).length){L.push("","MY SELF-CHECK");RUBRIC.forEach(r=>L.push(`${r.std} ${r.title}: ${S.scores[r.id]||"-"} / 4`))}
+  const data={v:1,savedAt:now.toISOString(),S:{...S,dirty:false,fileSavedAt:now.toISOString()}};
+  const b64=btoa(unescape(encodeURIComponent(JSON.stringify(data)))).replace(/(.{76})/g,"$1\n");
+  L.push("","","----- SAVE DATA: do not change anything below this line -----","BMW1:"+b64,"----- END SAVE DATA -----");
+  return L.join("\n");
+}
+$("#saveFile").onclick=()=>{
+  const now=new Date(),h=now.getHours(),h12=(h%12)||12,mm=String(now.getMinutes()).padStart(2,"0");
+  const who=(S.plan.name.trim()||"my").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")||"my";
+  const name=`${who}-story-${MONTHS[now.getMonth()]}-${now.getDate()}-${h12}-${mm}${h<12?"am":"pm"}.txt`;
+  const done=()=>{S.fileSavedAt=now.toISOString();S.dirty=false;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+    paintSaveState();toast(`Saved as ${name}. Now attach it to your Classroom assignment.`)};
+  const text=saveFileText(now);
+  if(DL){
+    DL.save({filename:name,data:text}).then(done,err=>{
+      if(err&&err.code==="declined")toast("Not saved. Tap Save my work when you're ready.");
+      else toast("Saving didn't work here. Try again, or ask your teacher.");
+    });
+    return;
+  }
+  try{
+    const blob=new Blob([text],{type:"text/plain"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+    done();
+  }catch(e){toast("Saving didn't work here. Try again, or ask your teacher.")}
+};
+let DL=null;
+if(window.claude&&typeof window.claude.use==="function"){window.claude.use("downloads").then(d=>{DL=d},()=>{})}
+let pending=null;
+function readSave(text){
+  const m=text.match(/BMW1:([A-Za-z0-9+\/=\s]+)/);
+  if(!m)throw new Error("nodata");
+  const d=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/\s+/g,"")))));
+  if(!d||!d.S||!d.S.parts)throw new Error("bad");
+  return d;
+}
+function askOpen(text){
+  try{pending=readSave(text)}catch(e){toast("That file isn't a Big Moment Writer save. Pick a file that ends in .txt with -story- in its name.");return}
+  const d=pending,nm2=(d.S.plan&&d.S.plan.name)||"";
+  $("#openAskText").textContent=`This save is from ${niceTime(new Date(d.savedAt))}${nm2?`. It's the story about ${nm2}`:""}.`;
+  $("#openAsk").hidden=false;$("#openYes").focus();
+}
+$("#openYes").onclick=()=>{
+  const d=pending.S;
+  S={...JSON.parse(JSON.stringify(blank)),...d,plan:{...blank.plan,...d.plan},parts:{...blank.parts,...d.parts},checks:d.checks||{},sel:d.sel||{},scores:d.scores||{}};
+  S.dirty=false;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  $("#openAsk").hidden=true;pending=null;fillPlan();paintSupport();paintSaveState();show(location.hash.slice(1)||"write");toast("Your story is back. Keep going!");
+};
+$("#openNo").onclick=()=>{$("#openAsk").hidden=true;pending=null};
+$("#openAsk").addEventListener("keydown",e=>{if(e.key==="Escape")$("#openNo").click()});
+$("#openFile").onclick=async()=>{
+  if(window.showOpenFilePicker){
+    try{const [h]=await window.showOpenFilePicker({startIn:"downloads",multiple:false,types:[{description:"Story save",accept:{"text/plain":[".txt"]}}]});
+      askOpen(await (await h.getFile()).text());return}
+    catch(e){if(e&&e.name==="AbortError")return}
+  }
+  $("#fileIn").value="";$("#fileIn").click();
+};
+$("#fileIn").onchange=async e=>{const f=e.target.files[0];if(f)askOpen(await f.text())};
+paintSaveState();
+
+const VIEWS=["plan","write","check"];
+function show(v){
+  if(!VIEWS.includes(v))v="plan";
+  VIEWS.forEach(x=>$("#view-"+x).hidden=x!==v);
+  document.querySelectorAll(".step").forEach(b=>b.setAttribute("aria-current",b.dataset.go===v));
+  if(v==="write")renderWriteView();
+  if(v==="check")renderCheck();
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{
+  if(location.hash!=="#"+b.dataset.go)location.hash=b.dataset.go;else show(b.dataset.go);window.scrollTo(0,0)}));
+window.addEventListener("hashchange",()=>show(location.hash.slice(1)));
+show(location.hash.slice(1)||"write");
+})();
+</script>
+
+</body>
+</html>

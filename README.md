@@ -24,3 +24,9 @@ To try it on a computer: `python3 -m http.server` in this folder, then open http
 - `js/asr-worker.js` – runs the Whisper model in the background ([Transformers.js](https://huggingface.co/docs/transformers.js))
 - `js/db.js` – saving lessons on the device, lesson files
 - `sw.js`, `manifest.webmanifest` – install to home screen, offline use
+
+## Big Moment Writer (`narrative/`)
+
+A separate page for students writing a 7th-grade narrative (CCSS W.7.3): plan, then write one plot part at a time (beginning, rising action, climax, resolution) with guiding questions, sentence starters and a word bank, then self-check against a student-friendly rubric. Help level (full / some / light) fades the supports.
+
+Work autosaves in the browser. **Save my work** downloads a `.txt` file (readable story on top, restore data at the bottom) that students attach to Classroom; **Open saved work** loads it back. Nothing is sent anywhere.
